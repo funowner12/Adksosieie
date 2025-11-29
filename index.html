@@ -1,56 +1,70 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Fun Admin Panel — Mobile UI v2 (Final)</title>
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
-  <style>
-    :root{
-      --bg1:#071026;--bg2:#0d1726;--muted:#b8c6d1;--accent:#00d4ff;--accent-2:#00ffa6;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#e8f5ff;background:linear-gradient(160deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased}
-    body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 10% 20%, rgba(0,212,255,0.04), transparent 8%), radial-gradient(circle at 90% 80%, rgba(0,255,170,0.03), transparent 10%);pointer-events:none;mix-blend-mode:screen;animation:moveBG 12s linear infinite}
-    @keyframes moveBG{0%{transform:translateY(0)}50%{transform:translateY(8px)}100%{transform:translateY(0)}}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fun Admin Panel — Improved UI</title>
 
-    .wrap{max-width:720px;margin:18px auto;padding:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:20px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,0.6);backdrop-filter:blur(6px)}
-    header{display:flex;align-items:center;gap:12px}
-    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:900;font-size:18px}
-    h1{font-size:18px;margin:0;color:var(--accent)}
-    p.desc{margin:2px 0 0 0;color:var(--muted);font-size:13px}
-    .status{margin-top:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;gap:10px}
-    .status .dot{width:12px;height:12px;border-radius:50%;background:#ffd54f}
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
 
-    form.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-    input,select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:15px}
-    input[readonly]{opacity:0.85}
-    .full{grid-column:1 / -1}
+<style>
+  :root{
+    --bg-1:#061021; --bg-2:#081526;
+    --card:#0f1720; --muted:#9fb3c6; --accent:#00e0ff; --green:#00ff9a; --danger:#ff6b6b;
+    --glass: rgba(255,255,255,0.03);
+  }
 
-    button{padding:12px;border-radius:12px;border:none;font-weight:700;font-size:15px;cursor:pointer}
-    .primary{background:linear-gradient(90deg,var(--accent),#7af2d1);color:#001}
-    .muted{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
-    .danger{background:linear-gradient(90deg,#ff6b6b,#ff6868);color:#fff}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#e6f7ff;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:740px;margin:18px auto;padding:16px}
 
-    hr.sep{border:none;height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);margin:18px 0;border-radius:4px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:16px;box-shadow:0 18px 60px rgba(1,6,18,0.6);backdrop-filter:blur(6px)}
+  header{display:flex;gap:12px;align-items:center}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-weight:900;color:#042}
+  h1{margin:0;font-size:18px;color:var(--accent)}
+  p.desc{margin:2px 0 0 0;color:var(--muted);font-size:13px}
 
-    .list{display:grid;gap:10px;margin-top:10px}
-    .user{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.20), rgba(255,255,255,0.01));box-shadow:0 6px 18px rgba(0,0,0,0.45);animation:enter .2s ease both}
-    .u-left{display:flex;gap:12px;align-items:center}
-    .avatar{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#111;font-size:18px;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
-    .u-right{display:flex;gap:8px;align-items:center}
-    .pill{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.02);font-weight:700;font-size:13px;color:var(--muted)}
-    .deleteBtn{padding:8px 10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#ff9b9b;cursor:pointer}
-    @keyframes enter{from{opacity:0;transform:translateY(6px) scale(.995)}to{opacity:1;transform:none}}
+  .status{margin-top:12px;padding:10px;border-radius:12px;background:var(--glass);display:flex;align-items:center;gap:10px}
+  .dot{width:11px;height:11px;border-radius:50%;background:#ffd95a;box-shadow:0 6px 20px rgba(255,200,80,0.06)}
 
-    .fab{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 18px 40px rgba(0,212,255,0.12);color:#001;font-weight:900;font-size:22px;border:4px solid rgba(255,255,255,0.06);cursor:pointer}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:rgba(0,0,0,0.6);color:#fff;padding:10px 16px;border-radius:12px;display:none}
+  form.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  input,select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;font-size:15px}
+  input[readonly]{opacity:0.85}
 
-    .searchRow{display:flex;gap:8px;margin-top:8px}
-    @media(max-width:520px){ form.controls{grid-template-columns:1fr} .logo{width:48px;height:48px} .avatar{width:48px;height:48px} }
-  </style>
+  .btn-row{display:flex;gap:10px;margin-top:8px}
+  button{cursor:pointer;border-radius:12px;border:none;padding:10px 12px;font-weight:800}
+  .btn-primary{background:linear-gradient(90deg,var(--accent),var(--green));color:#012}
+  .btn-muted{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+  .btn-danger{background:linear-gradient(90deg,#ff9b9b,#ff6b6b);color:white}
+
+  hr.sep{border:none;height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);margin:18px 0;border-radius:4px}
+
+  /* user list */
+  .list-head{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .user-count{color:var(--muted);font-weight:700}
+
+  .searchRow{display:flex;gap:8px;margin-top:10px}
+  .searchRow input{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+
+  .list{display:grid;gap:12px;margin-top:12px}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));box-shadow:0 8px 28px rgba(0,0,0,0.45)}
+  .left{display:flex;align-items:center;gap:12px}
+  .badge{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#012;font-size:18px}
+  .info{display:flex;flex-direction:column}
+  .mobile{font-size:16px;font-weight:900;color:#e6fbff}
+  .meta{font-size:12px;color:var(--muted);margin-top:4px}
+
+  .right{display:flex;align-items:center;gap:10px}
+  .time-pill{padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.03);font-weight:700;font-size:12px;color:var(--muted)}
+  .del-btn{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--danger);font-weight:800}
+
+  /* FAB */
+  .fab{position:fixed;right:20px;bottom:20px;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--green));color:#002;font-weight:900;font-size:28px;box-shadow:0 18px 40px rgba(0,212,255,0.12);border:4px solid rgba(255,255,255,0.04)}
+
+  @media(max-width:640px){ .badge{width:48px;height:48px;font-size:16px} .mobile{font-size:15px} .row{padding:10px} .right{gap:8px} }
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -63,65 +77,58 @@
         </div>
       </header>
 
-      <div class="status" id="status"><div class="dot"></div><div id="statusText" style="margin-left:6px">Connecting...</div></div>
+      <div class="status" style="margin-top:12px">
+        <div class="dot"></div>
+        <div style="margin-left:8px;color:var(--muted)">Connected</div>
+      </div>
 
       <form class="controls" onsubmit="event.preventDefault()">
-        <input id="title" class="full" placeholder="Enter Your Title Name" />
-        <input id="injector" placeholder="Injector Title Name" />
-        <div style="display:flex;gap:10px">
-          <button type="button" class="primary" onclick="saveSettings()">Save</button>
-          <button type="button" class="muted" onclick="resetSettings()">Reset</button>
-        </div>
+        <input id="title" class="full" placeholder="Community / Title name">
+        <input id="injector" placeholder="Injector name">
       </form>
 
-      <hr class="sep" />
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveSettings()">Save</button>
+        <button class="btn-muted" onclick="resetSettings()">Reset</button>
+      </div>
+
+      <hr class="sep">
 
       <h3 style="margin:0;color:var(--accent)">Add User</h3>
-      <div style="display:grid;grid-template-columns:1fr 140px;gap:10px;margin-top:10px">
-        <input id="mobile" placeholder="Mobile or unique key" />
-        <input id="time" readonly placeholder="Time (auto)" />
+      <div style="display:grid;grid-template-columns:1fr 120px;gap:10px;margin-top:10px">
+        <input id="mobile" placeholder="Enter full mobile number" inputmode="numeric">
+        <input id="time" readonly placeholder="Time (auto)">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-        <select id="brand" aria-label="brand select">
+
+      <div style="display:grid;grid-template-columns:1fr 120px;gap:10px;margin-top:10px">
+        <select id="brand">
           <option value="">-- Choose Brand --</option>
-          <option>Owner</option><option>Samsung</option><option>Xiaomi</option><option>Realme</option><option>Oppo</option><option>Vivo</option><option>OnePlus</option><option>Redmi</option><option>Other</option>
+          <option>Owner</option><option>Samsung</option><option>Xiaomi</option><option>Realme</option><option>Oppo</option><option>Vivo</option><option>OnePlus</option><option>Other</option>
         </select>
-        <div style="display:flex;gap:10px">
-          <button class="primary" onclick="addUser()">Add</button>
-          <button class="muted" onclick="clearAdd()">Clear</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" style="flex:1" onclick="addUser()">Add</button>
+          <button class="btn-muted" style="width:90px" onclick="clearForm()">Clear</button>
         </div>
       </div>
 
-      <h3 style="margin-top:16px;color:var(--accent);">Users <span id="userCount" style="font-size:13px;color:var(--muted);font-weight:600;margin-left:8px">(0)</span></h3>
-      <div class="searchRow">
-        <input id="search" placeholder="Search by name/brand" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px" />
-        <button class="muted" onclick="clearSearch()">Clear</button>
+      <div class="list-head">
+        <div style="margin-top:14px"><strong style="color:var(--accent)">Users</strong> <span id="count" class="user-count">(0)</span></div>
+        <div style="margin-top:14px" class="searchRow">
+          <input id="search" placeholder="Search number/brand" />
+          <button class="btn-muted" onclick="clearSearch()">Clear</button>
+        </div>
       </div>
 
-      <div id="list" class="list" aria-live="polite"></div>
-    </div>
-  </div>
-
-  <div class="fab" onclick="scrollToAdd()">+</div>
-  <div id="toast" class="toast"></div>
-
-  <!-- modal sheet for delete confirmation -->
-  <div id="modal" style="display:none;position:fixed;inset:0;align-items:flex-end;justify-content:center;pointer-events:none">
-    <div style="width:100%;max-width:720px;background:linear-gradient(180deg, rgba(10,14,20,0.98), rgba(10,14,20,0.98));border-radius:14px 14px 0 0;padding:16px;pointer-events:auto;box-shadow:0 -6px 30px rgba(0,0,0,0.6)">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <strong id="modalTitle">Confirm Delete</strong>
-        <button class="muted" onclick="closeModal()">Cancel</button>
-      </div>
-      <p style="margin-top:10px;color:var(--muted)" id="modalBody">Are you sure you want to delete this user?</p>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button class="danger" id="confirmDeleteBtn">Delete</button>
-        <button class="muted" onclick="closeModal()">Close</button>
+      <div id="list" class="list" aria-live="polite" style="margin-top:10px">
+        <div style="padding:22px;color:var(--muted);text-align:center">Loading...</div>
       </div>
     </div>
   </div>
+
+  <div class="fab" onclick="document.getElementById('mobile').focus()">+</div>
 
 <script>
-  // Firebase config (same as you provided)
+  // --- firebase config (keep your keys) ---
   const firebaseConfig = {
     apiKey: "AIzaSyD1k-DTIpfS8VYMGx-NMc1dpOYIZAQQjds",
     authDomain: "ytfuneduction.firebaseapp.com",
@@ -129,19 +136,21 @@
     projectId: "ytfuneduction",
     storageBucket: "ytfuneduction.firebasestorage.app",
     messagingSenderId: "681748387728",
-    appId: "1:681748387728:web:xxxxxxxxxxxxxxxx"
+    appId: "1:681748387728:web:abc123"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-  const UsersRef = db.ref('Users');
-  const dataRef  = db.ref('data/data');
+  const UsersRef = db.ref("Users");
+  const dataRef = db.ref("data/data");
 
-  document.getElementById('statusText').textContent = 'Connected';
+  // helpers
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  // time
-  function autoTime(){ document.getElementById('time').value = new Date().toLocaleString('en-IN'); }
-  autoTime(); setInterval(autoTime,1000);
+  // auto time (short)
+  function setTime() {
+    document.getElementById('time').value = new Date().toLocaleString('en-IN');
+  }
+  setTime(); setInterval(setTime,1000);
 
   // load settings
   dataRef.on('value', snap => {
@@ -150,152 +159,154 @@
     document.getElementById('injector').value = v.Injectorname || '';
   });
 
-  // helpers
-  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function escapeForAttr(s){ return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
-  function showToast(msg,ms=1800){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{ t.style.display='none' }, ms); }
+  function saveSettings() {
+    const t = document.getElementById('title').value.trim();
+    const i = document.getElementById('injector').value.trim();
+    const up = {};
+    if (t) up.title = t;
+    if (i) up.Injectorname = i;
+    if (Object.keys(up).length) {
+      dataRef.update(up).then(()=> showToast('Settings saved'));
+    } else showToast('Nothing to save');
+  }
+  function resetSettings(){ document.getElementById('title').value=''; document.getElementById('injector').value=''; showToast('Reset'); }
 
-  // Global items cache for search
-  let itemsCache = [];
+  // add user (mobile used as key)
+  function addUser(){
+    const mobile = document.getElementById('mobile').value.trim();
+    const brand  = document.getElementById('brand').value;
+    if (!mobile || !brand) { alert('Please enter number and brand'); return; }
+    const payload = { mobile, brand, time: new Date().toLocaleString('en-IN') };
+    UsersRef.child(mobile).set(payload).then(()=> {
+      showToast('User added');
+      clearForm();
+    }).catch(e => showToast('Error: ' + (e.message||e)));
+  }
+  function clearForm(){ document.getElementById('mobile').value=''; document.getElementById('brand').value=''; setTime(); }
 
-  // load users — build array, sort by time (newest first), stable sequential numbers
+  // live items cache (for search)
+  let items = [];
+
+  // load users snapshot -> stable array -> newest first -> render
   UsersRef.on('value', snap => {
+    items = [];
     const list = document.getElementById('list');
-    const countEl = document.getElementById('userCount');
+    const countEl = document.getElementById('count');
     list.innerHTML = '';
-    itemsCache = [];
-
     if (!snap.exists()) {
-      list.innerHTML = '<div style="color:#9fb8c8;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02)">No users yet</div>';
+      list.innerHTML = '<div style="padding:22px;color:var(--muted);text-align:center">No users yet</div>';
       if (countEl) countEl.textContent = '(0)';
       return;
     }
 
-    snap.forEach(child => {
-      const u = child.val() || {};
-      const key = child.key;
+    snap.forEach(ch => {
+      const u = ch.val() || {};
+      const key = ch.key;
       let timeVal = 0;
-      const timeStr = u.time || '';
       try {
-        timeVal = timeStr ? new Date(timeStr).getTime() : 0;
+        timeVal = u.time ? new Date(u.time).getTime() : 0;
         if (Number.isNaN(timeVal)) timeVal = 0;
-      } catch (e) { timeVal = 0; }
-      itemsCache.push({ key, data: u, timeVal });
+      } catch(e){ timeVal = 0; }
+      items.push({ key, data: u, timeVal });
     });
 
-    // sort newest first
-    itemsCache.sort((a,b) => b.timeVal - a.timeVal);
-
-    // render
-    renderList(itemsCache);
-    if (countEl) countEl.textContent = '(' + itemsCache.length + ')';
+    // newest first
+    items.sort((a,b) => b.timeVal - a.timeVal);
+    if (countEl) countEl.textContent = '(' + items.length + ')';
+    render(items);
   });
 
-  // Render function (accepts array of items to render)
-  function renderList(arr) {
-    const list = document.getElementById('list');
-    list.innerHTML = '';
+  function render(listArr) {
+    const container = document.getElementById('list');
+    container.innerHTML = '';
     const frag = document.createDocumentFragment();
-    for (let i=0; i < arr.length; i++) {
-      const idx = i + 1; // 1-based numbering top-to-bottom
-      frag.appendChild(createUserNode(arr[i].data, arr[i].key, idx));
+    for (let i=0;i<listArr.length;i++){
+      const idx = i+1;
+      const item = listArr[i];
+      const row = document.createElement('div');
+      row.className = 'row';
+      // short time (show only time), full datetime in title
+      let displayTime = '--';
+      let fullTime = '';
+      if (item.data && item.data.time) {
+        fullTime = item.data.time;
+        try {
+          const dt = new Date(fullTime);
+          if (!Number.isNaN(dt.getTime())) displayTime = dt.toLocaleTimeString('en-IN');
+          else displayTime = fullTime;
+        } catch(e) { displayTime = fullTime; }
+      }
+      // badge gradient choices
+      const grads = [
+        'linear-gradient(135deg,#ffdede,#ffd0ff)',
+        'linear-gradient(135deg,#d0f8ff,#c8ffd8)',
+        'linear-gradient(135deg,#fff4d6,#ffd7a6)'
+      ];
+      const g = grads[idx % grads.length];
+
+      row.innerHTML = `
+        <div class="left">
+          <div class="badge" style="background:${g}">${idx}</div>
+          <div class="info">
+            <div class="mobile">${esc(item.data.mobile || '')}</div>
+            <div class="meta">${esc(item.data.brand || '')}</div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="time-pill" title="${esc(fullTime)}">${esc(displayTime)}</div>
+          <button class="del-btn" data-key="${esc(item.key)}">Delete</button>
+        </div>
+      `;
+
+      // attach delete handler
+      const delBtn = row.querySelector('.del-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', () => {
+          if (confirm('Delete ' + (item.data.mobile || 'user') + ' ?')) {
+            UsersRef.child(item.key).remove().then(()=> showToast('Deleted'));
+          }
+        });
+      }
+
+      frag.appendChild(row);
     }
-    list.appendChild(frag);
+    container.appendChild(frag);
   }
 
-  // create user node — minimal: only number shown (no words) + time pill + delete
-  function createUserNode(u, key, index) {
-    const el = document.createElement('div');
-    el.className = 'user';
-
-    const gradients = [
-      'linear-gradient(135deg,#ffdede,#ffd0ff)',
-      'linear-gradient(135deg,#d0f8ff,#c8ffd8)',
-      'linear-gradient(135deg,#fff4d6,#ffd7a6)'
-    ];
-    const g = gradients[index % gradients.length];
-
-    const timeText = escapeHtml(u.time || '--');
-
-    // use data-key attribute and attach delete via dataset to avoid quote-escaping issues
-    el.innerHTML = `
-      <div class="u-left">
-        <div class="avatar" style="background:${g}">${index}</div>
-      </div>
-      <div class="u-right">
-        <div class="pill" title="${timeText}">${timeText}</div>
-        <button class="deleteBtn" data-key="${escapeForAttr(key)}">Delete</button>
-      </div>
-    `;
-
-    // hook up delete button safely
-    const btn = el.querySelector('.deleteBtn');
-    if (btn) {
-      btn.addEventListener('click', () => confirmDelete(key, (u.mobile || 'user')));
-    }
-
-    return el;
-  }
-
-  // Search
-  document.getElementById('search').addEventListener('input', e => {
-    const q = String(e.target.value || '').trim().toLowerCase();
-    if (!q) {
-      renderList(itemsCache);
-      return;
-    }
-    const filtered = itemsCache.filter(item => {
-      const mobile = String(item.data.mobile || '').toLowerCase();
-      const brand  = String(item.data.brand  || '').toLowerCase();
-      return mobile.includes(q) || brand.includes(q);
+  // search
+  document.getElementById('search').addEventListener('input', e=>{
+    const q = String(e.target.value||'').trim().toLowerCase();
+    if (!q) return render(items);
+    const filtered = items.filter(it => {
+      const m = String(it.data.mobile||'').toLowerCase();
+      const b = String(it.data.brand||'').toLowerCase();
+      return m.includes(q) || b.includes(q);
     });
-    renderList(filtered);
+    render(filtered);
   });
-  function clearSearch(){ document.getElementById('search').value=''; renderList(itemsCache); }
+  function clearSearch(){ document.getElementById('search').value=''; render(items); }
 
-  // Add user
-  function addUser(){
-    const mobile = document.getElementById('mobile').value.trim();
-    const brand  = document.getElementById('brand').value;
-    if(!mobile || !brand){ showToast('Please fill mobile and brand'); return; }
-    const payload = { mobile, brand, time: new Date().toLocaleString('en-IN') };
-    UsersRef.child(mobile).set(payload).then(()=>{ showToast('User added'); clearAdd(); }).catch(e=>showToast('Error: '+(e.message||e)));
+  // small toast
+  function showToast(msg, ms=1500){
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.position = 'fixed';
+    t.style.left = '50%';
+    t.style.transform = 'translateX(-50%)';
+    t.style.bottom = '86px';
+    t.style.background = 'rgba(0,0,0,0.6)';
+    t.style.color = '#fff';
+    t.style.padding = '10px 14px';
+    t.style.borderRadius = '10px';
+    t.style.zIndex = 9999;
+    document.body.appendChild(t);
+    setTimeout(()=> t.remove(), ms);
   }
-  function clearAdd(){ document.getElementById('mobile').value = ''; document.getElementById('brand').value = ''; autoTime(); }
 
-  // delete modal flow
-  let toDeleteKey = null;
-  function confirmDelete(key, label) {
-    toDeleteKey = key;
-    document.getElementById('modalTitle').textContent = 'Delete "' + (label || 'user') + '"?';
-    document.getElementById('modalBody').textContent = 'Are you sure you want to delete this user?';
-    document.getElementById('modal').style.display = 'flex';
-  }
-  function closeModal(){ toDeleteKey = null; document.getElementById('modal').style.display = 'none'; }
-  document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-    if (!toDeleteKey) return closeModal();
-    UsersRef.child(toDeleteKey).remove().then(()=>{ showToast('Deleted'); closeModal(); }).catch(e=>{ showToast('Delete error'); closeModal(); });
+  // keyboard enter -> add
+  document.getElementById('mobile').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addUser(); }
   });
-
-  // Save settings
-  function saveSettings(){
-    const t = document.getElementById('title').value.trim();
-    const i = document.getElementById('injector').value.trim();
-    const up = {};
-    if (t) up.title = t; if (i) up.Injectorname = i;
-    if (Object.keys(up).length === 0) { showToast('Nothing to save'); return; }
-    dataRef.update(up).then(()=>showToast('Settings saved')).catch(e=>showToast('Error: '+(e.message||e)));
-  }
-  function resetSettings(){ document.getElementById('title').value=''; document.getElementById('injector').value=''; showToast('Reset'); }
-
-  function scrollToAdd(){ window.scrollTo({top:0,behavior:'smooth'}); document.getElementById('mobile').focus(); }
-
-  // keyboard enter
-  document.getElementById('mobile').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addUser(); } });
-
-  // safety: handle generic errors
-  function onError(e){ console.error(e); document.getElementById('statusText').textContent = 'Error'; }
-
 </script>
 </body>
 </html>
