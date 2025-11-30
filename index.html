@@ -88,8 +88,8 @@
       </form>
 
       <div class="btn-row">
-        <button class="btn-primary" onclick="saveSettings()">Save</button>
-        <button class="btn-muted" onclick="resetSettings()">Reset</button>
+        <button type="button" class="btn-primary" onclick="saveSettings()">Save</button>
+        <button type="button" class="btn-muted" onclick="resetSettings()">Reset</button>
       </div>
 
       <hr class="sep">
@@ -106,8 +106,8 @@
           <option>Owner</option><option>Samsung</option><option>Xiaomi</option><option>Realme</option><option>Oppo</option><option>Vivo</option><option>OnePlus</option><option>Other</option>
         </select>
         <div style="display:flex;gap:8px">
-          <button class="btn-primary" style="flex:1" onclick="addUser()">Add</button>
-          <button class="btn-muted" style="width:90px" onclick="clearForm()">Clear</button>
+          <button type="button" class="btn-primary" style="flex:1" onclick="addUser()">Add</button>
+          <button type="button" class="btn-muted" style="width:90px" onclick="clearForm()">Clear</button>
         </div>
       </div>
 
@@ -115,7 +115,7 @@
         <div style="margin-top:14px"><strong style="color:var(--accent)">Users</strong> <span id="count" class="user-count">(0)</span></div>
         <div style="margin-top:14px" class="searchRow">
           <input id="search" placeholder="Search number/brand" />
-          <button class="btn-muted" onclick="clearSearch()">Clear</button>
+          <button type="button" class="btn-muted" onclick="clearSearch()">Clear</button>
         </div>
       </div>
 
@@ -166,7 +166,7 @@
     if (t) up.title = t;
     if (i) up.Injectorname = i;
     if (Object.keys(up).length) {
-      dataRef.update(up).then(()=> showToast('Settings saved'));
+      dataRef.update(up).then(()=> showToast('Settings saved')).catch(e => showToast('Error: ' + (e.message||e)));
     } else showToast('Nothing to save');
   }
   function resetSettings(){ document.getElementById('title').value=''; document.getElementById('injector').value=''; showToast('Reset'); }
@@ -254,17 +254,20 @@
         </div>
         <div class="right">
           <div class="time-pill" title="${esc(fullTime)}">${esc(displayTime)}</div>
-          <button class="del-btn" data-key="${esc(item.key)}">Delete</button>
+          <button type="button" class="del-btn" data-key="${esc(item.key)}">Delete</button>
         </div>
       `;
 
-      // attach delete handler
+      // attach delete handler (no confirm — direct remove for WebView compatibility)
       const delBtn = row.querySelector('.del-btn');
       if (delBtn) {
         delBtn.addEventListener('click', () => {
-          if (confirm('Delete ' + (item.data.mobile || 'user') + ' ?')) {
-            UsersRef.child(item.key).remove().then(()=> showToast('Deleted'));
-          }
+          // directly remove (confirm() may not work in Android WebView without WebChromeClient)
+          const key = delBtn.getAttribute('data-key');
+          if (!key) { showToast('Key missing'); return; }
+          UsersRef.child(key).remove()
+            .then(()=> showToast('Deleted'))
+            .catch(e => showToast('Delete error: ' + (e.message||e)));
         });
       }
 
